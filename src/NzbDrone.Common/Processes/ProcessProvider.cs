@@ -71,18 +71,26 @@ namespace NzbDrone.Common.Processes
         public ProcessInfo GetProcessById(int id)
         {
             _logger.Debug("Finding process with Id:{0}", id);
-            var process = Process.GetProcesses().FirstOrDefault(p => p.Id == id) ?? Process.GetProcessById(id);
 
-            if (process == null)
+            try
             {
-                _logger.Warn("Unable to find process with ID {0}", id);
+                var process = Process.GetProcesses().FirstOrDefault(p => p.Id == id) ?? Process.GetProcessById(id);
+
+                if (process == null)
+                {
+                    _logger.Warn("Unable to find process with ID {0}", id);
+                    return null;
+                }
+
+                var processInfo = ConvertToProcessInfo(process);
+                _logger.Debug("Found process {0}", processInfo.ToString());
+
+                return processInfo;
+            }
+            catch (ArgumentException ex)
+            {
                 return null;
             }
-
-            var processInfo = ConvertToProcessInfo(process);
-            _logger.Debug("Found process {0}", processInfo.ToString());
-
-            return processInfo;
         }
 
         public List<ProcessInfo> FindProcessByName(string name)
