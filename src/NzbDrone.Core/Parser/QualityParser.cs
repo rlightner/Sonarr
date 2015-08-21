@@ -34,8 +34,8 @@ namespace NzbDrone.Core.Parser
         private static readonly Regex VersionRegex = new Regex(@"\dv(?<version>\d)\b|\[v(?<version>\d)\]",
                                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex RealRegex = new Regex(@"\b(?<real>)real\b",
-                                                                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex RealRegex = new Regex(@"\b(?<real>REAL)\b",
+                                                                RegexOptions.Compiled);
 
         private static readonly Regex ResolutionRegex = new Regex(@"\b(?:(?<_480p>480p|640x480|848x480)|(?<_576p>576p)|(?<_720p>720p|1280x720)|(?<_1080p>1080p|1920x1080))\b",
                                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -55,7 +55,7 @@ namespace NzbDrone.Core.Parser
 
             name = name.Trim();
             var normalizedName = name.Replace('_', ' ').Trim().ToLower();
-            var result = ParseQualityModifiers(normalizedName);
+            var result = ParseQualityModifiers(name, normalizedName);
 
 
             if (RawHDRegex.IsMatch(normalizedName))
@@ -284,7 +284,7 @@ namespace NzbDrone.Core.Parser
             return result;
         }
 
-        private static Resolution ParseResolution(String name)
+        private static Resolution ParseResolution(string name)
         {
             var match = ResolutionRegex.Match(name);
 
@@ -297,7 +297,7 @@ namespace NzbDrone.Core.Parser
             return Resolution.Unknown;
         }
 
-        private static Quality OtherSourceMatch(String name)
+        private static Quality OtherSourceMatch(string name)
         {
             var match = OtherSourceRegex.Match(name);
 
@@ -308,7 +308,7 @@ namespace NzbDrone.Core.Parser
             return Quality.Unknown;
         }
 
-        private static QualityModel ParseQualityModifiers(String normalizedName)
+        private static QualityModel ParseQualityModifiers(string name, string normalizedName)
         {
             var result = new QualityModel { Quality = Quality.Unknown };
 
@@ -326,12 +326,12 @@ namespace NzbDrone.Core.Parser
 
             //TODO: re-enable this when we have a reliable way to determine real
             //TODO: Only treat it as a real if it comes AFTER the season/epsiode number
-//            var realRegexResult = RealRegex.Matches(normalizedName);
-//
-//            if (realRegexResult.Count > 0)
-//            {
-//                result.Revision.Real = realRegexResult.Count;
-//            }
+            var realRegexResult = RealRegex.Matches(name);
+
+            if (realRegexResult.Count > 0)
+            {
+                result.Revision.Real = realRegexResult.Count;
+            }
 
             return result;
         }
